@@ -1,0 +1,39 @@
+# Carpetas de dependencias
+node_modules/
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Salidas de compilación
+dist/
+build/
+frontend/dist/
+
+# Logs y temporales
+*.log
+*.tmp
+error.txt
+build_output.txt
+lint_output.txt
+out*.txt
+seed_*.txt
+backend/error.txt
+backend/backend_test.log
+backend/error.log
+backend/seed_err.log
+backend/seed_err.txt
+backend/seed_out.log
+backend/seed_output.txt
+backend/out.txt
+backend/out2.txt
+backend/out3.txt
+frontend/build.log
+frontend/build_err.txt
+frontend/build_error.txt
+frontend/build_output.txt
+frontend/build_utf8.txt
+frontend/lint_output.txt

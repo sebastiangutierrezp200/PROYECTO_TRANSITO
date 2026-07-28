@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit this
+.env
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Runtime
+pids/
+*.pid
+
+# Build output
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# Temp files
+*.tmp
+out*.txt
+seed_*.txt
+seed_*.log
+backend_test.log
+error.txt
+scratch_*.js
