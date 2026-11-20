@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, PhoneCall, AlertCircle, ChevronDown, ExternalLink } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Send, PhoneCall, AlertCircle, ChevronDown, ExternalLink, BookOpen } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
 import api from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 import MovIARobot from '../chat/MovIARobot'
 
 // ─── Initial quick replies ────────────────────────────────────────────────────
@@ -162,7 +163,7 @@ function MultasSummary({ simitData }) {
 }
 
 // ─── Message Renderer ─────────────────────────────────────────────────────────
-function MessageBubble({ msg }) {
+function MessageBubble({ msg, user }) {
   const isUser = msg.role === 'user'
   if (isUser) {
     return (
@@ -183,6 +184,16 @@ function MessageBubble({ msg }) {
         </div>
       )}
       {msg.simitData && <MultasSummary simitData={msg.simitData} />}
+      {/* In-chat course link — voluntary click, never forces auto-redirect */}
+      {msg.showCourseLink && (
+        <Link
+          to={user ? "/curso" : "/login"}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all hover:scale-[1.02] mt-1 shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #003366, #007A4D)', color: '#fff', border: '1px solid rgba(0,122,77,0.4)' }}
+        >
+          <BookOpen size={15} /> {user ? "Ir al Curso Virtual →" : "Iniciar Sesión para el Curso →"}
+        </Link>
+      )}
     </div>
   )
 }
@@ -190,6 +201,8 @@ function MessageBubble({ msg }) {
 // ─── Main Widget ──────────────────────────────────────────────────────────────
 export default function MovIAChatWidget() {
   const navigate = useNavigate()
+  // ✅ Read user at component top level (React rules of hooks — NEVER inside async fn)
+  const { user } = useAuth()
   const [visible, setVisible] = useState(false)
   const [showBubble, setShowBubble] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -272,36 +285,31 @@ export default function MovIAChatWidget() {
 
     setHistory(prev => [...prev, { role: 'user', content: userMessage }])
 
-    const { user } = useAuth()
-    
-    // ... inside sendMessage ...
+    // ✅ user comes from component scope (useAuth called at top level, NOT here)
     try {
-      const res = await api.post('/chatbot/mensaje', { 
-        sessionId, 
+      const res = await api.post('/chatbot/mensaje', {
+        sessionId,
         message: userMessage,
-        user: user ? { 
-          id: user.id, 
-          nombre: user.nombre, 
+        user: user ? {
+          id: user._id || user.id,
+          nombre: user.nombre,
           cedula: user.cedula,
-          placa_vehiculo: user.placa_vehiculo // Asegurarse de que venga en el user del context
-        } : null 
+          placa_vehiculo: user.placa_vehiculo
+        } : null
       })
       const { response, quickReplies: qr, sessionId: newId, action, simitData } = res.data.data
 
       if (newId) localStorage.setItem('movia_session_id', newId)
 
-      // Handle redirect action
-      if (action === 'redirect_curso') {
-        if (userMessage.toLowerCase().includes('ir al curso') || userMessage.toLowerCase().includes('🚀')) {
-          setTimeout(() => navigate('/curso'), 800)
-        }
-      }
+      // ✅ NEVER auto-navigate — instead attach showCourseLink flag so user decides
+      const showCourseLink = action === 'redirect_curso'
 
-      // Push message (with simitData attached if present)
+      // Push bot message (with optional simitData + course link flag)
       setHistory(prev => [...prev, {
         role: 'assistant',
         content: response,
-        simitData: simitData || null
+        simitData: simitData || null,
+        showCourseLink
       }])
       setQuickReplies(qr || [])
 
@@ -323,11 +331,8 @@ export default function MovIAChatWidget() {
 
   const handleQuickReply = (reply) => {
     if (isStreaming) return
-    // Redirect shortcuts
-    if (reply.includes('Ir al curso') || reply.includes('🚀')) {
-      navigate('/curso')
-      return
-    }
+    // ✅ No longer auto-navigating — just send the message to the bot
+    // The bot response will include a showCourseLink flag if navigation is relevant
     sendMessage(null, reply)
   }
 
@@ -483,7 +488,7 @@ export default function MovIAChatWidget() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ type: 'spring', stiffness: 280, damping: 28 }}
                         >
-                          <MessageBubble msg={msg} />
+                          <MessageBubble msg={msg} user={user} />
                         </motion.div>
                       ))}
 

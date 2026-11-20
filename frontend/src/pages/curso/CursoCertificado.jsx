@@ -1,3 +1,12 @@
+import { useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { 
+  Award, Shield, CheckCircle, Download, Share2, 
+  Home, RotateCcw, Percent, CheckCheck, Sparkles 
+} from 'lucide-react'
+import { useCourse } from '../../contexts/CourseContext'
+import { useAuth } from '../../contexts/AuthContext'
 import CourseLayout from '../../layouts/CourseLayout'
 import { jsPDF } from 'jspdf'
 
@@ -236,20 +245,52 @@ export default function CursoCertificado() {
             </div>
 
             {/* Details grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {[
                 { label: 'Fecha de emisión', value: issueDate },
                 { label: 'N° Comparendo', value: comparendoNum },
-                { label: 'Puntaje obtenido', value: `${examResult?.score || 100}%` },
+                { label: 'Puntaje obtenido', value: `${examResult?.score || 100}% (Aprobado)` },
                 { label: 'Código verificación', value: verificationCode },
               ].map((item, i) => (
                 <div key={i} className="bg-white/5 border border-white/8 rounded-2xl p-4 text-center">
                   <div className="text-xs text-white/30 uppercase tracking-wider mb-1">{item.label}</div>
-                  <div className={`font-bold text-sm ${i === 3 ? 'text-dorado-400 font-mono text-xs' : 'text-white'}`}>
+                  <div className={`font-bold text-sm ${i === 2 ? 'text-verde-400 font-extrabold text-base' : i === 3 ? 'text-dorado-400 font-mono text-xs' : 'text-white'}`}>
                     {item.value}
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* 50% Discount Benefit Card with QR Code */}
+            <div className="bg-gradient-to-r from-verde-500/15 via-verde-500/25 to-verde-600/15 border-2 border-verde-400/40 rounded-3xl p-6 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl backdrop-blur-md">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-2xl bg-verde-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-verde-500/30">
+                  <Percent size={32} />
+                </div>
+                <div className="text-left">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-verde-500/20 text-verde-300 text-xs font-bold uppercase tracking-wider mb-1">
+                    <CheckCircle size={12} /> Beneficio Legal Otorgado · Ley 769 de 2002
+                  </div>
+                  <h4 className="text-2xl font-display font-extrabold text-white">
+                    50% de Descuento en Comparendo SIMIT
+                  </h4>
+                  <p className="text-white/70 text-sm">
+                    Descuento del 50% aplicado automáticamente en el sistema nacional de multas tras aprobar el curso pedagógico.
+                  </p>
+                </div>
+              </div>
+
+              {/* QR Code */}
+              <div className="flex flex-col items-center bg-white p-3 rounded-2xl border-2 border-dorado-400/50 shadow-2xl shrink-0">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https://movilidadcali.gov.co/validar/${verificationCode}&color=0f172a`} 
+                  alt="Código QR de Verificación" 
+                  className="w-24 h-24 object-contain"
+                />
+                <span className="text-[9px] font-black uppercase tracking-wider text-gris-900 mt-1">
+                  Validar en SIMIT
+                </span>
+              </div>
             </div>
 
             {/* Footer */}

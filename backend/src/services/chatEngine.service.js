@@ -57,25 +57,129 @@ async function processMessage(sessionId, message, userContext = null) {
   switch (session.state) {
 
     // ─────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────
     case STATES.INICIO: {
-      const isMultas   = text.includes('multa') || text.includes('comparendo') ||
-                         text.includes('consultar mis multas') || text.includes('deuda');
-      const isCurso    = text.includes('curso') || text.includes('estadisticas') || text.includes('estadística');
-      const isCert     = text.includes('certificado') || text.includes('mis certificados');
-      const isEstado   = text.includes('estado') || text.includes('estado de mi comparendo');
-      const isHumano   = text.includes('humano') || text.includes('hablar con');
-      const isDescuento = text.includes('descuento') || text.includes('50%');
+      // 1. Preguntas frecuentes específicas (FAQ) evaluadas antes de coincidencias generales
+      const isSedes     = text.includes('sede') || text.includes('horario') || text.includes('quedan') ||
+                          text.includes('queda') || text.includes('ubicacion') || text.includes('direccion') ||
+                          text.includes('salomia') || text.includes('sameco') || text.includes('presencial');
 
-      if (isMultas) {
-        // → Paso 1
-        session.state = STATES.CONSULTAR_TIPO;
-        response = 'Perfecto, puedo consultar tus multas de varias formas.\n\n¿Cómo prefieres buscar?';
-        quickReplies = ['🪪 Por número de cédula', '🚗 Por placa del vehículo'];
-        
-        // Si el usuario tiene datos vinculados, agregar opción rápida
-        if (session.user?.cedula || session.user?.placa_vehiculo) {
-          quickReplies.unshift('🚀 Consultar mis datos guardados');
-        }
+      const isRequisitos = text.includes('requisito') || text.includes('documento') || text.includes('necesito') ||
+                           text.includes('se necesita') || text.includes('llevar') || text.includes('papeles') ||
+                           text.includes('herramienta');
+
+      const isGratis    = text.includes('cuesta') || text.includes('vale') || text.includes('precio') ||
+                          text.includes('costo') || text.includes('gratis') || text.includes('gratuito') ||
+                          text.includes('cobran') || text.includes('tarifa');
+
+      const isDuracion  = text.includes('dura') || text.includes('demora') || text.includes('tiempo') ||
+                          text.includes('horas') || text.includes('modulo') || text.includes('modulos') ||
+                          text.includes('metodologia');
+
+      const isPlazos    = text.includes('plazo') || text.includes('dias habiles') || text.includes('cuantos dias') ||
+                          text.includes('vence') || text.includes('vencimiento') || text.includes('termino') ||
+                          text.includes('caduca') || text.includes('cuando vence');
+
+      const isPago      = text.includes('pagar') || text.includes('pago') || text.includes('banco') ||
+                          text.includes('bancos') || text.includes('pse') || text.includes('efecty') ||
+                          text.includes('baloto') || text.includes('medios de pago');
+
+      const isReprobar  = text.includes('pierdo') || text.includes('pierde') || text.includes('reprobar') ||
+                          text.includes('repruebo') || text.includes('perdi') || text.includes('reintento') ||
+                          text.includes('fallar') || text.includes('intento');
+
+      const isCitas     = text.includes('agendar') || text.includes('cita') || text.includes('citas') ||
+                          text.includes('turno') || text.includes('turnos') || text.includes('agendamiento');
+
+      const isGracias   = text.includes('gracias') || text.includes('muchas gracias') || text.includes('agradezco') ||
+                          text === 'ok' || text === 'listo' || text === 'vale' || text === 'perfecto' || text === 'entendido';
+
+      const isMultas    = text.includes('multa') || text.includes('comparendo') ||
+                          text.includes('consultar mis multas') || text.includes('deuda') ||
+                          text.includes('consultar comparendo') || text.includes('ver multas');
+
+      const isCert      = text.includes('certificado') || text.includes('mis certificados') ||
+                          text.includes('descargar certificado') || text.includes('runt') || text.includes('simit');
+
+      const isEstado    = text.includes('estado de mi comparendo') || text.includes('estado del comparendo') ||
+                          text.includes('consultar estado');
+
+      const isHumano    = text.includes('humano') || text.includes('hablar con') || text.includes('asesor') ||
+                          text.includes('agente') || text.includes('persona') || text.includes('telefono') ||
+                          text.includes('linea') || text.includes('contacto');
+
+      const isDescuento = text.includes('descuento') || text.includes('50%') || text.includes('rebaja');
+
+      const isCurso     = text.includes('curso') || text.includes('como tomar') || text.includes('iniciar curso') ||
+                          text.includes('aula') || text.includes('pedagogico');
+
+      if (isSedes) {
+        response = '🏢 **Sedes y Horarios de Atención en Cali:**\n\n' +
+                   '• **Sede Norte (Salomia):** Av. 3N # 47-25 · Lunes a Viernes 8:00 AM – 5:00 PM\n' +
+                   '• **Sede Sur:** Cra 100 # 16-00 · Lunes a Viernes 8:00 AM – 4:00 PM\n' +
+                   '• **Sede Oriente:** Calle 70 # 26-35 · Lunes a Viernes 8:00 AM – 4:00 PM\n' +
+                   '• **Sede Oeste:** Av. Roosevelt # 40-61 · Lunes a Viernes 8:00 AM – 4:00 PM\n' +
+                   '• **Sede Centro:** Cra 8 # 10-27 · Lunes a Viernes 8:00 AM – 4:00 PM\n\n' +
+                   '💡 **Importante:** El **Curso Pedagógico es 100% Virtual** y está disponible las 24 horas del día sin necesidad de filas ni desplazamientos.';
+        quickReplies = ['📚 Cómo tomar el curso virtual', '🔍 Consultar mis multas', '🆘 Hablar con un humano'];
+
+      } else if (isRequisitos) {
+        response = '📋 **Requisitos para realizar el Curso Virtual:**\n\n' +
+                   '1️⃣ **Documento de Identidad:** Cédula original vigente (C.C., C.E. o Pasaporte).\n' +
+                   '2️⃣ **Comparendo:** Tener una infracción de tránsito activa notificada.\n' +
+                   '3️⃣ **Dispositivo con Internet:** Celular, tablet o computador.\n' +
+                   '4️⃣ **Cámara web o frontal activa:** Requerida para validación biométrica de presencia durante los módulos y el examen.\n\n' +
+                   '✨ Todo el proceso es digital y no requiere intermediarios.';
+        quickReplies = ['🚀 Cómo ingresar al curso', '🔍 Consultar mis multas', '💰 Descuento del 50%'];
+
+      } else if (isGratis) {
+        response = '🎉 **¡El Curso Pedagógico Virtual es 100% GRATUITO!**\n\n' +
+                   'No tienes que pagar absolutamente nada por acceder a la plataforma, ver los módulos interactivos ni por la expedición de tu certificado oficial.\n\n' +
+                   'Al culminar y aprobar el curso, recibes el beneficio legal del **50% de descuento** sobre el valor total de tu comparendo (Ley 769 de 2002).';
+        quickReplies = ['🔍 Consultar mis multas', '📚 Cómo tomar el curso virtual', '⏳ Plazos de descuento'];
+
+      } else if (isDuracion) {
+        response = '⏱️ **Duración y Metodología del Curso:**\n\n' +
+                   '• **5 Módulos interactivos:** Con videos explicativos y material pedagógico (aproximadamente 1.5 a 2 horas en total).\n' +
+                   '• **A tu propio ritmo:** Puedes pausar y retomar en el momento que desees desde cualquier dispositivo.\n' +
+                   '• **Evaluación final:** 10 preguntas pedagógicas sencillas.\n' +
+                   '• **Aprobación:** Con el 70% o más se expide de inmediato tu certificado de descuento.';
+        quickReplies = ['🚀 Ir al curso', '❓ ¿Qué pasa si repruebo el examen?', '🔍 Consultar mis multas'];
+        action = 'redirect_curso';
+
+      } else if (isPlazos) {
+        response = '⏳ **Plazos legales para el 50% de descuento (Ley 769 de 2002):**\n\n' +
+                   '• **Comparendo físico (impuesto por agente en vía):**\n' +
+                   '  - **50% de descuento:** Primeros **5 días hábiles** siguientes a la imposición.\n' +
+                   '  - **25% de descuento:** Entre los días **6 y 20 hábiles**.\n\n' +
+                   '• **Fotomulta (cámaras de fotodetección):**\n' +
+                   '  - **50% de descuento:** Hasta **11 días hábiles** posteriores a la notificación oficial.\n\n' +
+                   '⚠️ Pasados estos términos legales, deberás cancelar el 100% del comparendo más intereses moratorios.';
+        quickReplies = ['🔍 Consultar mis multas', '📚 Cómo tomar el curso virtual', 'Menú Principal'];
+
+      } else if (isPago) {
+        response = '💳 **¿Cómo pagar tu comparendo con el descuento?**\n\n' +
+                   '1️⃣ **En Línea (PSE):** Una vez aprobado el curso pedagógico virtual, ingresa al portal oficial o al SIMIT (**fcm.org.co/simit**) y paga en segundos vía PSE.\n' +
+                   '2️⃣ **Bancos autorizados:** Imprime la liquidación con descuento y paga en Banco de Occidente, Banco de Bogotá o Banco AV Villas.\n' +
+                   '3️⃣ **Puntos de pago:** Efecty y Baloto a nivel nacional con tu número de comparendo.\n\n' +
+                   '💡 **Recomendación:** Realiza primero el curso virtual para que el sistema liquide automáticamente la mitad del valor.';
+        quickReplies = ['🔍 Consultar mis multas', '📚 Cómo tomar el curso virtual', 'Menú Principal'];
+
+      } else if (isReprobar) {
+        response = '🔄 **¿Qué ocurre si no apruebas el examen?**\n\n' +
+                   '¡No te preocupes! Cuentas con **intentos ilimitados** para repasar los módulos y presentar nuevamente la evaluación sin ningún costo adicional, siempre que estés dentro del plazo legal del descuento.';
+        quickReplies = ['📚 Cómo tomar el curso virtual', 'Menú Principal'];
+
+      } else if (isCitas) {
+        response = '📅 **Sobre citas y agendamiento:**\n\n' +
+                   '• **Para Curso Pedagógico:** ¡Ya NO necesitas agendar cita presencial! Puedes realizar el curso virtual 100% online en cualquier momento sin filas.\n' +
+                   '• **Para otros trámites:** Si necesitas agendar una cita presencial para impugnaciones o acuerdos de pago, puedes ingresar a la sección de Agendamiento en este portal o acercarte a la Sede Salomia.';
+        quickReplies = ['📚 Tomar curso virtual (Sin cita)', '🏢 Sedes y horarios', '🆘 Hablar con un asesor'];
+
+      } else if (isGracias) {
+        response = '¡Con el mayor gusto! 😊 En la Secretaría de Movilidad de Cali estamos comprometidos con orientarte y mejorar la seguridad vial de todos. ¿Hay algo más en lo que te pueda colaborar?';
+        quickReplies = ['🔍 Consultar mis multas', '📚 Cómo tomar el curso virtual', 'Menú Principal'];
+
       } else if (text.includes('mis datos guardados') || text.includes('🚀')) {
         // ── CONSULTA DUAL AUTOMÁTICA ──
         if (!session.user?.cedula) {
@@ -85,27 +189,64 @@ async function processMessage(sessionId, message, userContext = null) {
         } else {
           return await processDualConsultation(session);
         }
-      } else if (isCurso || isCert) {
-        response = '🎓 Para acceder al curso virtual y tus certificados ingresa a tu portal de ciudadano. Todo es 100% virtual desde cualquier dispositivo.';
+
+      } else if (isMultas) {
+        session.state = STATES.CONSULTAR_TIPO;
+        response = 'Perfecto, puedo consultar tus comparendos directamente en la base de datos oficial.\n\n¿Cómo prefieres buscar?';
+        quickReplies = ['🪪 Por número de cédula', '🚗 Por placa del vehículo'];
+        if (session.user?.cedula || session.user?.placa_vehiculo) {
+          quickReplies.unshift('🚀 Consultar mis datos guardados');
+        }
+
+      } else if (isCert) {
+        response = '🎓 **Certificado Oficial de Descuento:**\n\n' +
+                   'Al aprobar la evaluación de tu curso (mínimo 70%), el certificado se genera automáticamente en formato PDF y se transmite al SIMIT y al RUNT.\n\n' +
+                   'Puedes consultarlo y descargarlo directamente en tu portal de ciudadano.';
         quickReplies = ['🚀 Ir al curso ahora', '🔍 Consultar mis multas'];
         action = 'redirect_curso';
+
       } else if (isEstado) {
         session.state = STATES.PEDIR_CEDULA_COMP;
         response = 'Claro. Para consultar el estado de tu comparendo, ingresa tu número de **cédula** (solo números, sin puntos ni espacios):';
+
       } else if (isDescuento) {
-        response = 'El **descuento del 50%** aplica a ciudadanos que completen el Curso Virtual Pedagógico de Seguridad Vial gratuitamente.\n\n1️⃣ Regístrate o inicia sesión\n2️⃣ Completa los 5 módulos virtuales\n3️⃣ Aprueba el examen (mínimo 70%)\n4️⃣ Descarga tu certificado de descuento\n\nTodo desde tu celular o computador, sin filas 🎉';
-        quickReplies = ['🚀 Ir al curso ahora', '🔍 Consultar mis multas'];
+        response = 'El **descuento del 50%** aplica a ciudadanos que completen el Curso Virtual Pedagógico de Seguridad Vial gratuitamente.\n\n' +
+                   '1️⃣ Regístrate o inicia sesión con tu cédula\n' +
+                   '2️⃣ Estudia los 5 módulos virtuales interactivos\n' +
+                   '3️⃣ Aprueba la evaluación con al menos 70%\n' +
+                   '4️⃣ Descarga tu certificado y paga la mitad del valor\n\n' +
+                   'Todo 100% virtual desde tu celular o computador, sin filas 🎉';
+        quickReplies = ['🚀 Ir al curso ahora', '⏳ Ver plazos de descuento', '🔍 Consultar mis multas'];
         action = 'redirect_curso';
+
+      } else if (isCurso) {
+        response = '🎓 **Curso Pedagógico de Seguridad Vial 100% Virtual:**\n\n' +
+                   'Es una capacitación pedagógica gratuita que te permite acceder al 50% de descuento en tus comparendos.\n\n' +
+                   '• Consta de 5 módulos dinámicos\n' +
+                   '• Disponible 24/7 desde cualquier computador o celular\n' +
+                   '• Certificado oficial automático transmitido a SIMIT y RUNT';
+        quickReplies = ['🚀 Ir al curso ahora', '📋 Ver requisitos', '🔍 Consultar mis multas'];
+        action = 'redirect_curso';
+
       } else if (isHumano) {
-        response = 'Un asesor humano está disponible en:\n\n📞 **602 445 9000 ext. 1**\n🌐 movilidadcali.gov.co\n\nHorario: Lunes a Viernes 8am–5pm';
-        quickReplies = ['🔍 Consultar mis multas', '💰 Info sobre el descuento del 50%'];
+        response = '📞 **Canales de Atención y Soporte Humano:**\n\n' +
+                   '• **Línea Telefónica:** (602) 445 9000 ext. 1\n' +
+                   '• **Línea Gratuita Nacional:** 01 8000 115 000\n' +
+                   '• **Horario:** Lunes a Viernes de 8:00 AM a 5:00 PM\n' +
+                   '• **Portal Web:** movilidadcali.gov.co\n' +
+                   '• **Sede Principal:** Salomia (Av. 3N # 47-25, Cali)';
+        quickReplies = ['🔍 Consultar mis multas', '💰 Info sobre el descuento del 50%', 'Menú Principal'];
+
       } else {
-        response = '¡Hola! Soy **MOV-IA** 🤖, el asistente virtual de la Secretaría de Movilidad de Cali.\n\n¿En qué te puedo ayudar hoy?';
+        response = '¡Hola! Soy **MOV-IA** 🤖, el asistente virtual oficial de la Secretaría de Movilidad de Cali.\n\n' +
+                   'Puedo responder tus dudas sobre requisitos, sedes, horarios, cursos pedagógicos y consultar tus multas con descuento.\n\n' +
+                   '¿En qué te puedo ayudar hoy?';
         quickReplies = [
           '🔍 Consultar mis multas',
           '📚 Cómo tomar el curso virtual',
           '💰 Descuento del 50%',
-          '📋 Estado de mi comparendo',
+          '🏢 Sedes y horarios',
+          '📋 Requisitos del curso',
           '🆘 Hablar con un humano',
         ];
       }

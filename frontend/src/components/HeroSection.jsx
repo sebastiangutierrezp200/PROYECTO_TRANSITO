@@ -26,12 +26,12 @@ export default function HeroSection() {
           
           {/* Text column */}
           <div className="lg:col-span-7 animate-fade-up">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-8 shadow-glass uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 bg-verde-500/15 backdrop-blur-md border border-verde-400/30 text-verde-300 text-xs font-bold px-4 py-2 rounded-full mb-8 shadow-glass uppercase tracking-wider">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-verde-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-verde-500"></span>
               </span>
-              Portal Oficial · Secretaría de Movilidad de Cali
+              ¿Quieres hacer tu curso virtual? · Portal Oficial Secretaría de Movilidad
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-white leading-[1.08] tracking-tight">

@@ -3,6 +3,9 @@ require('dotenv').config();
 const autoSeedDB = require('./seed');
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
   try {
     const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/movilidad_cali';
     const conn = await mongoose.connect(uri);
@@ -10,7 +13,6 @@ const connectDB = async () => {
     await autoSeedDB();
   } catch (error) {
     console.error('Error conectando a MongoDB:', error.message);
-    process.exit(1);
   }
 };
 

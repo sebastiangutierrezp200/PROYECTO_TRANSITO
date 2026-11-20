@@ -21,6 +21,16 @@ const app = express();
 // ── DB Connection (auto-seed is triggered inside connectDB) ──────────────────
 connectDB();
 
+// Ensure DB connection is established for serverless requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Error en middleware DB:', err.message);
+  }
+  next();
+});
+
 // ── CORS ───────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -97,10 +107,12 @@ process.on('uncaughtException', (err) => {
   // Don't exit the process — keep the server alive
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`📡 Entorno: ${process.env.NODE_ENV || 'development'}\n`);
-});
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`📡 Entorno: ${process.env.NODE_ENV || 'development'}\n`);
+  });
+}
 
 module.exports = app;

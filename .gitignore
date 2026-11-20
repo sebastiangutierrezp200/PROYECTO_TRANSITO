@@ -16,6 +16,7 @@ frontend/dist/
 # Logs y temporales
 *.log
 *.tmp
+capturas/
 error.txt
 build_output.txt
 lint_output.txt
